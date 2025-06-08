@@ -1,12 +1,16 @@
-# app.py - Your Streamlit Web App Script
+# app.py (Corrected Version)
 
 import streamlit as st
 import pandas as pd
 import joblib
 
-# --- Functions ---
+# --- Page Configuration ---
+# THIS MUST BE THE FIRST STREAMLIT COMMAND.
+# We move it to the top of the script to ensure it always runs first.
+st.set_page_config(page_title="Kenya Malaria Risk Predictor", page_icon="🦟", layout="wide")
 
-# The @st.cache_resource decorator ensures the model is loaded only once, making the app faster.
+
+# --- Functions ---
 @st.cache_resource
 def load_model():
     """Loads the pre-trained model from the file."""
@@ -16,20 +20,23 @@ def load_model():
 # --- Main App ---
 
 # 1. Load the pre-trained model
-model = load_model()
+try:
+    model = load_model()
+except FileNotFoundError:
+    # This error message will now display correctly on the configured page.
+    st.error("Model file not found. Please ensure 'malaria_risk_model.joblib' is in the same folder as app.py.")
+    st.stop() # Stop the app from running further if the model isn't found.
 
-# 2. Configure the page layout and title
-st.set_page_config(page_title="Kenya Malaria Risk Predictor", page_icon="🦟", layout="wide")
 
-# 3. Create the app's title and description
+# 2. Create the app's title and description
 st.title("🦟 Kenya County Malaria Risk Predictor")
 st.markdown("""
 This web application predicts the estimated number of malaria cases per 100,000 people in a Kenyan county. 
-It uses a **Gradient Boosting** machine learning model trained on public data from HDX, KNBS, and Open-Meteo to support **SDG 3: Good Health and Well-being**.
+It uses a **Gradient Boosting** machine learning model trained on public data to support **SDG 3: Good Health and Well-being**.
 Enter the environmental and demographic factors for a county in the sidebar to get a prediction.
 """)
 
-# 4. Create the input widgets in the sidebar
+# 3. Create the input widgets in the sidebar
 st.sidebar.header("Enter County Data:")
 
 # Use sliders for a better user experience
@@ -50,10 +57,9 @@ precip = st.sidebar.slider(
     min_value=0.0, max_value=10.0, value=3.0, step=0.1
 )
 
-# 5. Create the prediction logic
-# This part runs when the user clicks the button.
+# 4. Create the prediction logic
 if st.sidebar.button("Predict Malaria Risk"):
-    # Create a DataFrame from the user's inputs in the correct order
+    # Create a DataFrame from the user's inputs
     input_data = {
         'Population_Density_per_Sq_Km': [pop_density],
         'Piped_Water_Access_Percent': [water_access],
@@ -67,7 +73,6 @@ if st.sidebar.button("Predict Malaria Risk"):
     
     # Display the result
     st.subheader("Prediction Result")
-    # Use st.metric for a nicer display
     st.metric(label="Estimated Malaria Cases", value=f"{prediction[0]:.2f} per 100,000 people")
     
     # Add a visual interpretation of the risk level
@@ -79,7 +84,7 @@ if st.sidebar.button("Predict Malaria Risk"):
         st.error("Risk Level: High")
         st.markdown("_High-risk areas require priority attention for resource allocation and preventative measures._")
 
-# 6. Add a concluding disclaimer
+# 5. Add a concluding disclaimer
 st.write("---")
 st.markdown("""
 **Disclaimer:** This is a proof-of-concept tool. The model is based on historical data and should not be used for medical diagnosis or as the sole factor for definitive resource allocation. Always consult with local public health experts.
