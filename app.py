@@ -4,9 +4,8 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# --- Page Configuration ---
-# THIS MUST BE THE FIRST STREAMLIT COMMAND.
-# We move it to the top of the script to ensure it always runs first.
+# Page Configuration
+
 st.set_page_config(page_title="Kenya Malaria Risk Predictor", page_icon="🦟", layout="wide")
 
 
