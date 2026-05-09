@@ -1,17 +1,28 @@
 # train_model.py
+"""
+Malaria Risk Model Training Script
 
-# This script trains the Gradient Boosting model on the full dataset
-# and saves the trained model to a file named 'malaria_risk_model.joblib'.
+Trains a Gradient Boosting Regressor model on Kenyan county malaria data
+and saves the trained model to a joblib file for use in the web application.
 
+This script is self-contained with embedded training data for reproducibility.
+"""
+
+import logging
+from typing import Dict, List, Tuple
 import pandas as pd
 from sklearn.ensemble import GradientBoostingRegressor
 import joblib
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
 
 print("--- Starting model training ---")
 
 # Step 1: The complete dataset
 # We include the data directly here so this script is self-contained.
-data = {
+data: Dict[str, List] = {
     'County': ['Baringo', 'Bomet', 'Bungoma', 'Busia', 'Elgeyo-Marakwet', 'Embu', 'Garissa', 'Homa Bay', 'Isiolo', 'Kajiado', 'Kakamega', 'Kericho', 'Kiambu', 'Kilifi', 'Kirinyaga', 'Kisii', 'Kisumu', 'Kitui', 'Kwale', 'Laikipia', 'Lamu', 'Machakos', 'Makueni', 'Mandera', 'Marsabit', 'Meru', 'Migori', 'Mombasa', 'Murang\'a', 'Nairobi', 'Nakuru', 'Nandi', 'Narok', 'Nyamira', 'Nyandarua', 'Nyeri', 'Samburu', 'Siaya', 'Taita-Taveta', 'Tana River', 'Tharaka-Nithi', 'Trans Nzoia', 'Turkana', 'Uasin Gishu', 'Vihiga', 'Wajir', 'West Pokot'],
     'Malaria_cases_per_100k': [100, 200, 1500, 2500, 50, 20, 300, 3000, 150, 80, 2000, 300, 10, 1200, 15, 400, 3500, 60, 1300, 40, 900, 30, 45, 250, 180, 70, 2800, 1000, 25, 5, 90, 250, 120, 350, 30, 20, 200, 3200, 500, 700, 55, 600, 400, 150, 1800, 220, 280],
     'Population_Density_per_Sq_Km': [38, 351, 552, 527, 150, 216, 19, 359, 11, 51, 597, 370, 953, 117, 417, 966, 555, 37, 105, 78, 22, 229, 134, 33, 7, 221, 423, 5634, 424, 6247, 287, 349, 66, 903, 195, 230, 15, 403, 27, 9, 149, 399, 15, 331, 1888, 12, 64],
@@ -33,12 +44,24 @@ target = final_merged_data['Malaria_cases_per_100k']
 # We use the Gradient Boosting Regressor as it was our best-performing model.
 # We train it on ALL the data to make it as smart as possible.
 final_model = GradientBoostingRegressor(n_estimators=100, random_state=42)
-final_model.fit(features, target)
-print("Model training complete.")
+
+try:
+    logger.info("Training Gradient Boosting Regressor model...")
+    final_model.fit(features, target)
+    logger.info("Model training completed successfully")
+except Exception as e:
+    logger.error(f"Error during model training: {str(e)}")
+    raise
 
 
 # Step 4: Save the trained model to a file
 # This creates the 'malaria_risk_model.joblib' file.
-joblib.dump(final_model, 'malaria_risk_model.joblib')
+try:
+    logger.info("Saving trained model to malaria_risk_model.joblib...")
+    joblib.dump(final_model, 'malaria_risk_model.joblib')
+    logger.info("Model successfully saved")
+except Exception as e:
+    logger.error(f"Error saving model: {str(e)}")
+    raise
 
 print("--- Success! Model has been saved to 'malaria_risk_model.joblib' ---")
